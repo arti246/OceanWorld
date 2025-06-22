@@ -1,0 +1,22 @@
+.ocean-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.entity-count {
+  margin-bottom: 10px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.ocean {
+  background-color: #1a6fc9;
+  border: 3px solid #0d47a1;
+  border-radius: 5px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  display: block;
+}
