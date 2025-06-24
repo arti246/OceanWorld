@@ -1,128 +1,167 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { OceanModel } from './OceanModel';
+import { OceanRenderer } from './OceanRenderer';
+import { SimulationControls } from './SimulationControls';
 import './OceanView.css';
-import Plankton from '../classes/Plankton';
 
 const OceanView = () => {
+  const [params, setParams] = useState({
+    planktonCount: 30,
+    smallFishCount: 1,
+    bigFishCount: 1,
+    width: 800,
+    height: 600,
+    simulationSpeed: 1
+  });
+
+  const paramsRef = useRef(params);
+  const [stats, setStats] = useState({
+    plankton: { total: 0, born: 0, died: 0 },
+    smallFish: { total: 0, born: 0, died: 0 },
+    bigFish: { total: 0, born: 0, died: 0 }
+  });
+
   const canvasRef = useRef(null);
-  const [entities, setEntities] = useState([]);
-  const [isRunning, setIsRunning] = useState(true);
-  const [speed, setSpeed] = useState(1);
-  const [initialCount, setInitialCount] = useState(50);
-  const [stats, setStats] = useState({ total: 0, born: 0, died: 0 });
-  const animationRef = useRef();
-  const lastUpdateRef = useRef(0);
-
-  // Инициализация планктона
-  const resetSimulation = useCallback(() => {
-    const newEntities = Array.from({ length: initialCount }, () => (
-      new Plankton(Math.random() * 780 + 10, Math.random() * 580 + 10)
-    ));
-    setEntities(newEntities);
-    setStats({ total: initialCount, born: 0, died: 0 });
-  }, [initialCount]);
+  const modelRef = useRef(null);
+  const rendererRef = useRef(null);
+  const controlsRef = useRef(null);
+  const [currentSpeed, setCurrentSpeed] = useState(1);
 
   useEffect(() => {
-    resetSimulation();
-  }, [resetSimulation]);
+    paramsRef.current = params;
+  }, [params]);
 
-  // Обновление сущностей с учётом скорости
-  const updateEntities = useCallback(() => {
-    setEntities(prevEntities => {
-      const newEntities = [];
-      let bornCount = 0;
-      let diedCount = 0;
-
-      const aliveEntities = prevEntities.filter(entity => {
-        // Обновляем с учётом скорости
-        for (let i = 0; i < speed; i++) {
-          entity.update();
-        }
-
-        // Размножение с учётом скорости
-        if (entity.reproduce && Math.random() < 0.0009 * speed) {
-          const offspring = entity.reproduce();
-          if (offspring) {
-            newEntities.push(offspring);
-            bornCount++;
-          }
-        }
-
-        if (!entity.isAlive) diedCount++;
-        return entity.isAlive;
-      });
-
-      setStats(s => ({
-        total: aliveEntities.length + newEntities.length,
-        born: s.born + bornCount,
-        died: s.died + diedCount
-      }));
-
-      return [...aliveEntities, ...newEntities];
-    });
-  }, [speed]);
-
-  // Анимация
   useEffect(() => {
-    if (!isRunning) {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      return;
+    modelRef.current = new OceanModel(paramsRef);
+    rendererRef.current = new OceanRenderer(canvasRef, modelRef.current);
+    controlsRef.current = new SimulationControls(
+      modelRef.current,
+      rendererRef.current,
+      setStats
+    );
+    controlsRef.current.setSpeed(params.simulationSpeed);
+    controlsRef.current.reset();
+
+    return () => controlsRef.current.stop();
+  }, [params.simulationSpeed]);
+
+  const updateParam = (name, value) => {
+    setParams(prev => ({ ...prev, [name]: value }));
+    if (name === 'simulationSpeed') {
+      controlsRef.current?.setSpeed(value);
     }
+  };
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    const animate = (timestamp) => {
-      animationRef.current = requestAnimationFrame(animate);
-      
-      // Обновляем с учётом скорости
-      if (timestamp - lastUpdateRef.current > 1000 / 60) { // 60 FPS
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        entities.forEach(entity => {
-          if (entity.isAlive) entity.render(ctx);
-        });
-
-        updateEntities();
-        lastUpdateRef.current = timestamp;
-      }
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationRef.current);
-  }, [isRunning, entities, updateEntities]);
+  const StatsColumn = ({ title, data, color }) => (
+    <div className="stats-column" style={{ borderTop: `3px solid ${color}` }}>
+      <h4>{title}</h4>
+      <p><span>Всего:</span> <strong>{data.total}</strong></p>
+      <p><span>Родилось:</span> <strong>{data.born}</strong></p>
+      <p><span>Погибло:</span> <strong>{data.died}</strong></p>
+    </div>
+  );
 
   return (
     <div className="simulation-container">
       <div className="ocean-wrapper">
-        <canvas ref={canvasRef} className="ocean" width={800} height={600} />
+        <canvas ref={canvasRef} width={params.width} height={params.height} className="ocean"/>
       </div>
       
       <div className="control-panel">
         <h2>Управление симуляцией</h2>
         
         <div className="buttons-group">
-          <button onClick={() => setIsRunning(!isRunning)}>
-            {isRunning ? '⏸ Пауза' : '▶ Старт'}
+          <button onClick={() => controlsRef.current.start()}>Старт</button>
+          <button onClick={() => controlsRef.current.stop()}>Пауза</button>
+          <button onClick={() => controlsRef.current.reset()}>Сбросить</button>
+          <button onClick={() => rendererRef.current.toggleVisionRadius()}>
+            Видимость
           </button>
-          <button onClick={() => setSpeed(2)} className={speed === 2 ? 'active' : ''}>
-            ⏩ Ускорить 2x
+        </div>
+
+        <div className="speed-controls">
+          <button
+            className={`speed-btn ${currentSpeed === 0.5 ? 'active' : ''}`}
+            onClick={() => {
+              controlsRef.current.setSpeed(0.5);
+              setCurrentSpeed(0.5);
+            }}
+          >
+            ×0.5
           </button>
-          <button onClick={() => setSpeed(1)} className={speed === 1 ? 'active' : ''}>
-            ⏵ Нормальная скорость
+          <button
+            className={`speed-btn ${currentSpeed === 1 ? 'active' : ''}`}
+            onClick={() => {
+              controlsRef.current.setSpeed(1);
+              setCurrentSpeed(1);
+            }}
+          >
+            ×1
           </button>
-          <button onClick={resetSimulation} className="reset-btn">
-            ⟳ Сбросить
+          <button
+            className={`speed-btn ${currentSpeed === 2 ? 'active' : ''}`}
+            onClick={() => {
+              controlsRef.current.setSpeed(2);
+              setCurrentSpeed(2);
+            }}
+          >
+            ×2
           </button>
         </div>
         
+        <div className="settings">
+          <h3>Настройки</h3>
+          <div className="param">
+            <label>Планктон:</label>
+            <input
+              type="number"
+              min="1"
+              max="500"
+              value={params.planktonCount}
+              onChange={e => updateParam('planktonCount', parseInt(e.target.value))}
+            />
+          </div>
+          <div className="param">
+            <label>Мал. рыбы:</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={params.smallFishCount}
+              onChange={e => updateParam('smallFishCount', parseInt(e.target.value))}
+            />
+          </div>
+          <div className="param">
+            <label>Бол. рыбы:</label>
+            <input
+              type="number"
+              min="0"
+              max="50"
+              value={params.bigFishCount}
+              onChange={e => updateParam('bigFishCount', parseInt(e.target.value))}
+            />
+          </div>
+        </div>
+        
         <div className="stats-panel">
-          <h3>Статистика:</h3>
-          <p>Скорость: <strong>{speed}x</strong></p>
-          <p>Всего планктона: <strong>{stats.total}</strong></p>
-          <p>Родилось: <strong>{stats.born}</strong></p>
-          <p>Погибло: <strong>{stats.died}</strong></p>
+          <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>Статистика популяции</h3>
+          <div className="stats-row">
+            <StatsColumn 
+              title="Планктон" 
+              data={stats.plankton} 
+              color="#19f205" 
+            />
+            <StatsColumn 
+              title="Рыбки" 
+              data={stats.smallFish} 
+              color="#0dd9d9" 
+            />
+            <StatsColumn 
+              title="Рыбы" 
+              data={stats.bigFish} 
+              color="#eb0c0c" 
+            />
+          </div>
         </div>
       </div>
     </div>

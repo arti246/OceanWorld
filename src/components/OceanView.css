@@ -31,7 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 7px;
 }
 
 button {
@@ -66,8 +66,27 @@ button:disabled {
   background: white;
   padding: 15px;
   border-radius: 6px;
-  margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.settings .param {
+  display: flex;        /* Делаем flex-контейнер */
+  align-items: center;  /* Выравниваем по центру */
+  margin: 10px 0;       /* Отступы */
+  gap: 10px;            /* Расстояние между label и input */
+}
+
+.settings .param label {
+  min-width: 100px;     /* Фиксированная ширина для label */
+  margin: 0;            /* Убираем старый margin */
+  color: #555;
+}
+
+.settings .param input {
+  flex: 1;              /* Растягиваем input на оставшееся место */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 h2, h3 {
@@ -99,4 +118,91 @@ button.active {
 
 .reset-btn {
   grid-column: span 2;
+}
+
+.stats-panel {
+  background: white;
+  padding: 12px; /* Уменьшили padding */
+  border-radius: 6px;
+  margin-top: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Скрываем выходящее за границы */
+}
+
+.stats-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.stats-column {
+  flex: 1;
+  min-width: 0; /* Важно для flex-элементов */
+  padding: 8px; /* Уменьшили padding */
+  background: #f9f9f9;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.stats-column h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px; /* Уменьшили шрифт */
+  white-space: nowrap; /* Запрещаем перенос */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Троеточие если не помещается */ 
+}
+
+.stats-column p {
+  margin: 3px 0;
+  font-size: 12px; /* Уменьшили шрифт */
+  display: flex;
+  justify-content: space-between;
+}
+
+.stats-column span {
+  color: #666;
+}
+
+.stats-column strong {
+  color: #222;
+  font-weight: 600;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .stats-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .stats-column {
+    width: 100%;
+  }
+}
+
+.speed-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.speed-btn {
+  flex: 1;
+  padding: 8px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speed-btn:hover {
+  background: #45a049;
+}
+
+.speed-btn.active {
+  background: #2E7D32;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
 }
