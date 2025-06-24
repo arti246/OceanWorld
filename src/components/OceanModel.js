@@ -1,6 +1,7 @@
 import { Plankton } from '../classes/Plankton';
 import { SmallFish } from '../classes/SmallFish';
 import { BigFish } from '../classes/BigFish';
+import { Fish } from '../classes/Fish';
 
 export class OceanModel {
   constructor(paramsRef) {
@@ -54,7 +55,11 @@ export class OceanModel {
     
     // Обновление и размножение
     this.entities.forEach(entity => {
-      entity.update();
+      if (entity instanceof Fish) {
+        entity.update(this.entities); // Передаем все entities для поиска пищи
+      } else {
+        entity.update();
+      }
       
       if (entity.reproduce && Math.random() < entity.reproductionChance) {
         const offspring = entity.reproduce();
@@ -68,7 +73,7 @@ export class OceanModel {
     });
 
     // Взаимодействия между существами
-    this.checkInteractions();
+    //this.checkInteractions();
 
     // Удаление умерших
     const prevCounts = {
