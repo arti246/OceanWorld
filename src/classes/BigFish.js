@@ -9,11 +9,12 @@ export class BigFish extends Fish {
     this.color = "#eb0c0c";
     this.speed = Math.random() * 1 + 0.3;
     this.visionRadius = 80;
-    this.reproductionChance = 0.0001;
     this.maxAge = Math.random() * 8000 + 5000;
     this.hungerDifference = 0.02; // Большие рыбы голодают медленнее
     this.hungerThreshold = 40; // Начинают охотиться раньше
     this.eatingDistance = 20; // Дистанция для поедания маленьких рыб
+
+    this.reproductionRate = 0.01; // Медленнее размножаются
   }
 
   findFood(entities) {

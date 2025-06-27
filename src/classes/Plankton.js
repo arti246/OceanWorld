@@ -9,7 +9,7 @@ export class Plankton extends Entity {
     this.speed = Math.random() * 0.5 + 0.1;
     this.direction = Math.random() * Math.PI * 2;
     this.reproductionChance = 0.0006;
-    this.maxAge = Math.random() * 3500 + 2000;
+    this.maxAge = Math.random() * 500 + 2000;
   }
 
   update() {

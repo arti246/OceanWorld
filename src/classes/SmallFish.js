@@ -8,12 +8,12 @@ export class SmallFish extends Fish {
     this.width = 10;
     this.height = 6;
     this.color = "#0dd9d9";
-    this.speed = Math.random() * 2 + 0.5;
+    this.speed = Math.random() * 1 + 0.8;
     this.visionRadius = 50;
-    this.reproductionChance = 0.0003;
     this.maxAge = Math.random() * 5000 + 3000;
+    this.hunger = Math.random() * 10 + 90;
     this.hungerDifference = 0.05; // Маленькие рыбы голодают быстрее
-    this.eatingDistance = 15; // Дистанция для поедания планктона
+    this.eatingDistance = 8; // Дистанция для поедания планктона
     this.panicSpeed = this.speed * 1.5; // Ускорение при панике
     this.panicMode = false;
     this.energyLoss = 0.1; // Тратим энергию при панике
@@ -21,12 +21,14 @@ export class SmallFish extends Fish {
     // Уменьшаем выносливость
     this.maxPanicTime = 200; // Лимит времени в панике
     this.panicTime = 0;
+
+    this.reproductionRate = 0.05; // Быстрее размножаются
   }
 
   update(entities) {
     // Проверяем наличие хищников перед основным поведением
-    this.checkPredators(entities);
-    super.update(entities);
+    //this.checkPredators(entities);
+    return super.update(entities);
   }
 
   findFood(entities) {

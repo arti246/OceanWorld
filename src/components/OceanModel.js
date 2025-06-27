@@ -43,7 +43,7 @@ export class OceanModel {
     }
 
     this.stats = {
-      plankton: { total: planktonCount, born: 0, died: 0 },
+      plankton: { total: planktonCount, born: 0, died: 0 , eaten: 0},
       smallFish: { total: smallFishCount, born: 0, died: 0 },
       bigFish: { total: bigFishCount, born: 0, died: 0 }
     };
@@ -54,26 +54,30 @@ export class OceanModel {
     this.frameCount++;
     
     // Обновление и размножение
+    const newEntities = [];
     this.entities.forEach(entity => {
       if (entity instanceof Fish) {
-        entity.update(this.entities); // Передаем все entities для поиска пищи
+        const offspring = entity.update(this.entities);
+        if (offspring) {
+          this.entities.push(offspring);
+          // Обновляем статистику
+          if (offspring instanceof SmallFish) this.stats.smallFish.born++;
+          else if (offspring instanceof BigFish) this.stats.bigFish.born++;
+        }
       } else {
         entity.update();
       }
-      
-      if (entity.reproduce && Math.random() < entity.reproductionChance) {
+      if (entity instanceof Plankton && Math.random() < entity.reproductionChance) {
         const offspring = entity.reproduce();
         if (offspring) {
-          this.entities.push(offspring);
-          if (offspring instanceof Plankton) this.stats.plankton.born++;
-          else if (offspring instanceof SmallFish) this.stats.smallFish.born++;
-          else if (offspring instanceof BigFish) this.stats.bigFish.born++;
+          newEntities.push(offspring);
+          this.stats.plankton.born++;
         }
       }
     });
 
-    // Взаимодействия между существами
-    //this.checkInteractions();
+    // Добавляем новых особей
+    this.entities.push(...newEntities);
 
     // Удаление умерших
     const prevCounts = {
@@ -89,29 +93,6 @@ export class OceanModel {
     this.stats.plankton.died += Math.max(0, prevCounts.plankton - this.stats.plankton.total);
     this.stats.smallFish.died += Math.max(0, prevCounts.smallFish - this.stats.smallFish.total);
     this.stats.bigFish.died += Math.max(0, prevCounts.bigFish - this.stats.bigFish.total);
-  }
-
-  checkInteractions() {
-    // Упрощённая проверка взаимодействий (можно оптимизировать)
-    for (let i = 0; i < this.entities.length; i++) {
-      for (let j = i + 1; j < this.entities.length; j++) {
-        const e1 = this.entities[i];
-        const e2 = this.entities[j];
-        
-        const dx = e1.x - e2.x;
-        const dy = e1.y - e2.y;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-
-        // Маленькая рыба ест планктон
-        if (e1 instanceof SmallFish && e2 instanceof Plankton && distance < 15) {
-          e2.isAlive = false;
-        }
-        // Большая рыба ест маленькую
-        else if (e1 instanceof BigFish && e2 instanceof SmallFish && distance < 20) {
-          e2.isAlive = false;
-        }
-      }
-    }
   }
 
   updateStats() {

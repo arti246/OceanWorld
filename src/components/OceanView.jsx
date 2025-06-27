@@ -6,9 +6,9 @@ import './OceanView.css';
 
 const OceanView = () => {
   const [params, setParams] = useState({
-    planktonCount: 30,
-    smallFishCount: 1,
-    bigFishCount: 1,
+    planktonCount: 40,
+    smallFishCount: 16,
+    bigFishCount: 0,
     width: 800,
     height: 600,
     simulationSpeed: 1

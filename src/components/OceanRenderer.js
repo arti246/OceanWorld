@@ -7,6 +7,11 @@ export class OceanRenderer {
     this.ctx = this.canvas.getContext('2d');
     this.model = model;
     this.showVisionRadius = false;
+
+    document.addEventListener('reproduction', (e) => {
+      this.addReproductionAnimation(e.detail.x, e.detail.y, e.detail.duration || 1000);
+  });
+    this.animations = new Map();
   }
 
   toggleVisionRadius() {
@@ -115,8 +120,13 @@ export class OceanRenderer {
         if (entity.hasActiveTarget()) {
           this.drawTargetHighlight(entity.target);
         }
+
+        if (this.showVisionRadius) this.drawVisionRadius(entity);
       }
     });
+
+    // Отрисовка анимаций размножения
+    this.drawReproductionAnimations();
 
     // Затем рисуем подсветку целей поверх всех
     this.model.entities.forEach(entity => {
@@ -130,6 +140,22 @@ export class OceanRenderer {
     });
   }
 
+  drawVisionRadius(entity) {
+  if (!this.showVisionRadius) return;
+
+  this.ctx.beginPath();
+  this.ctx.arc(
+    entity.x + entity.width / 2,
+    entity.y + entity.height / 2,
+    entity.visionRadius,
+    0,
+    Math.PI * 2
+  );
+  this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+  this.ctx.lineWidth = 1;
+  this.ctx.stroke();
+}
+
   drawTargetHighlight(target) {
     // Жёлтый ореол вокруг цели
     this.ctx.beginPath();
@@ -142,5 +168,42 @@ export class OceanRenderer {
     );
     this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
     this.ctx.fill();
+  }
+
+  drawReproductionAnimations() {
+    const now = performance.now();
+    
+    this.animations.forEach((anim, id) => {
+        const progress = (now - anim.startTime) / anim.duration;
+        if (progress >= 1) return;
+
+        // Рисуем пульсирующий круг
+        this.ctx.beginPath();
+        this.ctx.arc(
+            anim.x,
+            anim.y,
+            15 * progress, // Растущий радиус
+            0,
+            Math.PI * 2
+        );
+        this.ctx.strokeStyle = `rgba(255, 105, 180, ${1 - progress})`; // Розовый цвет
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+    });
+  }
+
+  addReproductionAnimation(x, y, duration) {
+    const id = Date.now(); // Уникальный ID анимации
+    this.animations.set(id, {
+      x, y,
+      progress: 0,
+      duration,
+      startTime: performance.now()
+    });
+
+    // Автоматическое удаление после завершения
+    setTimeout(() => {
+      this.animations.delete(id);
+    }, duration);
   }
 }
