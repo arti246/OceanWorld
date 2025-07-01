@@ -1,11 +1,10 @@
 import { Entity } from './Entity';
 
 export class Fish extends Entity {
-  constructor(x, y) {
-    super(x, y);
-    this.direction = Math.random() * Math.PI * 2;
+  constructor(x, y, width = 10, height = 6) {
+    super(x, y, width, height);
     this.changeDirectionChance = 0.02;
-    this.hunger = 60;
+    this.hunger = Math.random() * 10 + 90;
     this.hungerDifference = 0.03; // Базовое значение уменьшения голода
     this.target = null;
     this.hungerThreshold = 50; // Порог, при котором начинаем искать еду
@@ -22,6 +21,8 @@ export class Fish extends Entity {
   update(entities) {
     super.update();
     if (!this.isAlive) return;
+
+    this.checkBoundaries();
 
     if (this.isReproducing) {
       this.reproductionTimer--;
@@ -71,30 +72,14 @@ export class Fish extends Entity {
       this.moveRandomly();
     }
 
-    // Ограничиваем положение в границах океана
-    this.x = Math.max(0, Math.min(800 - this.width, this.x));
-    this.y = Math.max(0, Math.min(600 - this.height, this.y));
-
     return null;
   }
 
   findFood(entities) {}
 
   moveToTarget() {
-    if (!this.target || !this.target.isAlive) {
-      this.target = null;
-      return;
-    }
-
-    const dx = this.target.x - this.x;
-    const dy = this.target.y - this.y;
-    const distance = Math.atan2(dy, dx);
-
-    const angleDiff = ((distance - this.direction + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
-    this.direction += angleDiff * 0.1; // Коэффициент плавности поворота
-
-    this.x += Math.cos(this.direction) * this.speed;
-    this.y += Math.sin(this.direction) * this.speed;
+    if (!this.target) return;
+    this.moveTo(this.target, this.target === this.partner ? 0.5 : 1.0);
   }
 
   isTargetReached() {
@@ -116,8 +101,7 @@ export class Fish extends Entity {
     if (Math.random() < this.changeDirectionChance) {
       this.direction = Math.random() * Math.PI * 2;
     }
-    this.x += Math.cos(this.direction) * this.speed;
-    this.y += Math.sin(this.direction) * this.speed;
+    this.move();
   }
 
   reproduce() {
@@ -189,8 +173,8 @@ export class Fish extends Entity {
 
     // Движение к партнеру
     this.direction = Math.atan2(dy, dx);
-    this.x += Math.cos(this.direction) * this.speed * 0.5; // Медленнее чем при охоте
-    this.y += Math.sin(this.direction) * this.speed * 0.5;
+    this.x += Math.cos(this.direction) * this.speed * 0.1; // Медленнее чем при охоте
+    this.y += Math.sin(this.direction) * this.speed * 0.1;
 
     return null;
   }

@@ -8,7 +8,7 @@ const OceanView = () => {
   const [params, setParams] = useState({
     planktonCount: 40,
     smallFishCount: 16,
-    bigFishCount: 0,
+    bigFishCount: 4,
     width: 800,
     height: 600,
     simulationSpeed: 1

@@ -2,35 +2,37 @@ import { Fish } from './Fish';
 import { SmallFish } from './SmallFish';
 
 export class BigFish extends Fish {
-  constructor(x, y) {
-    super(x, y);
-    this.width = 20;
-    this.height = 12;
+  constructor(x, y, width = 20, height = 12) {
+    super(x, y, width, height);
     this.color = "#eb0c0c";
-    this.speed = Math.random() * 1 + 0.3;
+    this.baseSpeed = Math.random() * 0.5 + 0.3; // Базовая скорость
+    this.speed = this.baseSpeed;
+    this.huntingSpeed = this.baseSpeed * 2.5; // Скорость при охоте
     this.visionRadius = 80;
     this.maxAge = Math.random() * 8000 + 5000;
     this.hungerDifference = 0.02; // Большие рыбы голодают медленнее
-    this.hungerThreshold = 40; // Начинают охотиться раньше
     this.eatingDistance = 20; // Дистанция для поедания маленьких рыб
 
-    this.reproductionRate = 0.01; // Медленнее размножаются
+    this.reproductionRate = 0.01; // Медленнее размножаются 0.01
+  }
+
+  update(entities) {
+    // Сбрасываем цель если она мертва или сбежала
+    if (this.target && (!this.target.isAlive || 
+        this.getDistanceTo(this.target) > this.visionRadius * 1.5)) {
+      this.target = null;
+    }
+
+    super.update(entities);
   }
 
   findFood(entities) {
-    let minDist = Infinity;
-    
-    for (const entity of entities) {
-      if (entity instanceof SmallFish && entity.isAlive) {
-        const dx = entity.x - this.x;
-        const dy = entity.y - this.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < minDist && dist < this.visionRadius) {
-          minDist = dist;
-          this.target = entity;
-        }
-      }
-    }
+    const prey = this.findEntitiesInRange(entities, {
+      filter: e => e instanceof SmallFish,
+      maxDistance: this.visionRadius
+    });
+  
+    this.target = prey[0] || null;
+    this.speed = this.target ? this.huntingSpeed : this.baseSpeed;
   }
 }

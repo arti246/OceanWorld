@@ -3,15 +3,12 @@ import { Plankton } from './Plankton';
 import { BigFish } from './BigFish';
 
 export class SmallFish extends Fish {
-  constructor(x, y) {
-    super(x, y);
-    this.width = 10;
-    this.height = 6;
+  constructor(x, y, width = 10, height = 6) {
+    super(x, y, width, height);
     this.color = "#0dd9d9";
-    this.speed = Math.random() * 1 + 0.8;
+    this.speed = Math.random() * 0.5 + 0.7;
     this.visionRadius = 50;
     this.maxAge = Math.random() * 5000 + 3000;
-    this.hunger = Math.random() * 10 + 90;
     this.hungerDifference = 0.05; // Маленькие рыбы голодают быстрее
     this.eatingDistance = 8; // Дистанция для поедания планктона
     this.panicSpeed = this.speed * 1.5; // Ускорение при панике
@@ -27,25 +24,17 @@ export class SmallFish extends Fish {
 
   update(entities) {
     // Проверяем наличие хищников перед основным поведением
-    //this.checkPredators(entities);
+    this.checkPredators(entities);
     return super.update(entities);
   }
 
   findFood(entities) {
-    let minDist = Infinity;
+    const food = this.findEntitiesInRange(entities, {
+      filter: e => e instanceof Plankton,
+      maxDistance: this.visionRadius
+    });
     
-    for (const entity of entities) {
-      if (entity instanceof Plankton && entity.isAlive) {
-        const dx = entity.x - this.x;
-        const dy = entity.y - this.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < minDist && dist < this.visionRadius) {
-          minDist = dist;
-          this.target = entity;
-        }
-      }
-    }
+    this.target = food[0] || null;
   }
 
   checkPredators(entities) {
@@ -65,6 +54,7 @@ export class SmallFish extends Fish {
           this.speed = this.panicSpeed;
           this.panicSpeed = speedSafe;
           this.target = null; // Отменяем текущую цель
+          this.partner = null;
           break;
         }
       }
