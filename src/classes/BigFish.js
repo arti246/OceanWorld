@@ -5,7 +5,7 @@ export class BigFish extends Fish {
   constructor(x, y, width = 20, height = 12) {
     super(x, y, width, height);
     this.color = "#eb0c0c";
-    this.baseSpeed = Math.random() * 0.5 + 0.3; // Базовая скорость
+    this.baseSpeed = Math.random() * 0.2 + 0.3; // Базовая скорость
     this.speed = this.baseSpeed;
     this.huntingSpeed = this.baseSpeed * 2.5; // Скорость при охоте
     this.visionRadius = 80;

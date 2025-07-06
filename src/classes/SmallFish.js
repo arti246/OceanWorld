@@ -6,7 +6,7 @@ export class SmallFish extends Fish {
   constructor(x, y, width = 10, height = 6) {
     super(x, y, width, height);
     this.color = "#0dd9d9";
-    this.speed = Math.random() * 0.5 + 0.7;
+    this.speed = Math.random() * 0.5 + 0.3;
     this.visionRadius = 50;
     this.maxAge = Math.random() * 5000 + 3000;
     this.hungerDifference = 0.05; // Маленькие рыбы голодают быстрее
@@ -14,10 +14,6 @@ export class SmallFish extends Fish {
     this.panicSpeed = this.speed * 1.5; // Ускорение при панике
     this.panicMode = false;
     this.energyLoss = 0.1; // Тратим энергию при панике
-
-    // Уменьшаем выносливость
-    this.maxPanicTime = 200; // Лимит времени в панике
-    this.panicTime = 0;
 
     this.reproductionRate = 0.05; // Быстрее размножаются
   }

@@ -8,10 +8,10 @@ export class Fish extends Entity {
     this.hungerDifference = 0.03; // Базовое значение уменьшения голода
     this.target = null;
     this.hungerThreshold = 50; // Порог, при котором начинаем искать еду
-    this.eatingDistance = 10; // Дистанция для "поедания"
+    this.eatingDistance = 10; // Дистанция для поедания
 
     this.reproductionLevel = Math.random() * 5;
-    this.gender = Math.random() > 0.5 ? 'male' : 'female'; // Случайный пол
+    this.gender = Math.random() > 0.5 ? 'male' : 'female';
     this.partner = null;
     this.reproductionRate = 0.1; // Скорость роста готовности к размножению
     this.isReproducing = false; // Флаг размножения
@@ -84,15 +84,14 @@ export class Fish extends Entity {
 
   isTargetReached() {
     if (!this.target) return false;
-    const dx = this.target.x - this.x;
-    const dy = this.target.y - this.y;
-    return Math.sqrt(dx*dx + dy*dy) < this.eatingDistance;
+    const distance = this.getDistanceTo(this.target);
+    return distance < this.eatingDistance;
   }
 
   eat() {
-    this.hunger += 40; // Полное насыщение
+    this.hunger += 40;
     if (this.target) {
-      this.target.isAlive = false; // "Съедаем" цель
+      this.target.isAlive = false;
     }
     this.target = null;
   }
@@ -102,14 +101,6 @@ export class Fish extends Entity {
       this.direction = Math.random() * Math.PI * 2;
     }
     this.move();
-  }
-
-  reproduce() {
-    if (!this.isAlive) return null;
-    return new this.constructor(
-      this.x + (Math.random() * 30 - 15),
-      this.y + (Math.random() * 30 - 15)
-    );
   }
 
   getDisplayColor() {

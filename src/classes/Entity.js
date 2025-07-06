@@ -34,19 +34,19 @@ export class Entity {
 
     // Горизонтальные границы (левый/правый край)
     if (this.x <= margin) {
-      this.direction = Math.PI - this.direction; // Правильное отражение
+      this.direction = Math.PI - this.direction;
       this.x = margin; // Фиксируем позицию у границы
       directionChanged = true;
     } 
     else if (this.x >= worldWidth - margin - this.width) {
-      this.direction = Math.PI - this.direction; // Правильное отражение
+      this.direction = Math.PI - this.direction;
       this.x = worldWidth - margin - this.width;
       directionChanged = true;
     }
 
     // Вертикальные границы (верхний/нижний край)
     if (this.y <= margin) {
-      this.direction = -this.direction; // Правильное отражение
+      this.direction = -this.direction;
       this.y = margin;
       directionChanged = true;
     } 
@@ -56,12 +56,10 @@ export class Entity {
       directionChanged = true;
     }
 
-    // Добавляем небольшую случайность при отскоке
     if (directionChanged && Math.random() < 0.3) {
       this.direction += (Math.random() - 0.5) * Math.PI/8;
     }
 
-    // Нормализуем угол в диапазон [0, 2π]
     this.direction = (this.direction + 2 * Math.PI) % (2 * Math.PI);
   }
 
